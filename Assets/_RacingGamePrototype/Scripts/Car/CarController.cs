@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem;
 
 namespace _RacingGamePrototype.Scripts.Car
 {
@@ -66,6 +65,7 @@ namespace _RacingGamePrototype.Scripts.Car
             HandleMotor();
             HandleSteering();
             ApplyTurnResistance();
+            UpdateGrip();
         }
         
         
@@ -118,11 +118,84 @@ namespace _RacingGamePrototype.Scripts.Car
 
         private void ApplyTurnResistance()
         {
-            if (_rb.linearVelocity.magnitude > slipThreshold && Math.Abs(_moveInput.x) > 0.1f)
+            if (_rb.linearVelocity.sqrMagnitude < 0.1f)
+                return;
+
+            Vector3 localVel = transform.InverseTransformDirection(_rb.linearVelocity);
+            localVel.x *= turnDrag;
+
+            _rb.linearVelocity = transform.TransformDirection(localVel);
+        }
+
+        private void UpdateGrip()
+        {
+            float throttle = Mathf.Abs(_moveInput.y);
+            float steer    = Mathf.Abs(_moveInput.x);
+            float speed    = _rb.linearVelocity.magnitude;
+
+            bool coasting  = throttle < 0.1f;
+
+            // base
+            float frontSide = 1.2f;
+            float rearSide  = 1.1f;
+            float forward   = 1.0f;
+
+            // lift-off
+            if (coasting)
             {
-                _rb.linearVelocity *= turnDrag;
+                frontSide = 1.4f;
+                rearSide  = 0.9f;
+                forward   = 0.9f;
+            }
+
+            // Drift
+            if (speed > 10f && steer > 0.1f)
+            {
+                frontSide *= Mathf.Lerp(1f, 0.8f, steer);
+                rearSide  *= Mathf.Lerp(1f, 0.6f, steer);
+            }
+
+            foreach (var f in frontWheels)
+            {
+                var fr = f.sidewaysFriction; fr.stiffness = frontSide; f.sidewaysFriction = fr;
+                var ff = f.forwardFriction;  ff.stiffness = forward;   f.forwardFriction  = ff;
+            }
+
+            foreach (var r in rearWheels)
+            {
+                var fr = r.sidewaysFriction; fr.stiffness = rearSide;  r.sidewaysFriction = fr;
+                var ff = r.forwardFriction;  ff.stiffness = forward;   r.forwardFriction  = ff;
             }
         }
+
+        
+        private static void SetSidewaysStiffness(WheelCollider wheel, float stiffness)
+        {
+            var fric = wheel.sidewaysFriction;
+            fric.stiffness = stiffness;
+            wheel.sidewaysFriction = fric;
+        }
+        
+        private void UpdateSteeringGrip()
+        {
+            float throttle = Mathf.Abs(_moveInput.y);
+            bool coasting = throttle < 0.1f;
+
+            foreach (var front in frontWheels)
+            {
+                var f = front.sidewaysFriction;
+                f.stiffness = coasting ? 1.3f : 1.0f;
+                front.sidewaysFriction = f;
+            }
+
+            foreach (var rear in rearWheels)
+            {
+                var f = rear.sidewaysFriction;
+                f.stiffness = coasting ? 0.9f : 1.0f;
+                rear.sidewaysFriction = f;
+            }
+        }
+
     }
 }
 
