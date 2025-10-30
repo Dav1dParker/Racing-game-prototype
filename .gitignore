@@ -1,0 +1,67 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+Records/
+*.booproj
+*.pidb
+*.suo
+*.user
+*.userprefs
+*.csproj
+*.unityproj
+*.sln
+*.swp
+*.tmp
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Cache
+*.stackdump
+*.orig
+*.diff
+*.patch
+*.meta~
+*.bak
+*.old
+*.blend1
+*.blend2
+*.blend@
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Rider / JetBrains
+.idea/
+*.iml
+.vscode/
+
+# Builds and generated content
+Build/
+Builds/
+*.apk
+*.aab
+*.xcodeproj
+*.xcworkspace
+*.ipa
+
+# Package Manager
+Packages/com.unity.package-manager.cache/
+Packages/com.unity.test-framework/
+Packages/packages-lock.json
+
+# Crash Reports
+sysinfo.txt
+
+# Local settings
+ProjectSettings/EditorBuildSettings.asset
+ProjectSettings/ProjectVersion.txt
+ProjectSettings/QualitySettings.asset
