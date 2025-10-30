@@ -16,15 +16,22 @@ namespace _RacingGamePrototype.Scripts.Car
         [SerializeField] private float motorForce = 1500f;
         [SerializeField] private float brakeForce = 3000f;
         [SerializeField] private float maxSteerAngle = 30f;
-
+        
         [Header("Physics settings")]
         [SerializeField] private float turnDrag = 0.98f;
-        [SerializeField] private float slipThreshold = 5f;
+        [SerializeField] private float gripRestoreSpeed = 20f;
+        [SerializeField] private float wheelGrip = 2.0f;
+        //[SerializeField] private float slipThreshold = 5f;
+        [SerializeField] private float driftGThreshold = 0.8f;
+        [SerializeField] private float driftRecoveryG = 0.4f;
+
 
         private Rigidbody _rb;
         private float _throttleInput;
         private float _steerInput;
         private InputSystem_Actions _carControls;
+        private float _lateralG; 
+        private bool _isDrifting;
 
         public bool IsBraking { get; private set; }
 
@@ -51,6 +58,15 @@ namespace _RacingGamePrototype.Scripts.Car
 
         private void FixedUpdate()
         {
+            float lateralAccel = Mathf.Abs((_rb.angularVelocity.y * _rb.linearVelocity.magnitude)) / 9.81f; // G force
+            _lateralG = Mathf.Lerp(_lateralG, lateralAccel, Time.fixedDeltaTime * 10f);
+            
+            
+            if (!_isDrifting && _lateralG > driftGThreshold)
+                _isDrifting = true;
+            else if (_isDrifting && _lateralG < driftRecoveryG)
+                _isDrifting = false;
+            
             HandleMotor();
             HandleSteering();
             ApplyTurnResistance();
@@ -60,24 +76,39 @@ namespace _RacingGamePrototype.Scripts.Car
         private void HandleMotor()
         {
             float vertical = _throttleInput;
+            float currentSpeed = Vector3.Dot(_rb.linearVelocity, transform.forward);
             float motorTorque = 0f;
             float brakeTorque = 0f;
             IsBraking = false;
 
-            if (vertical < 0f)
+            const float stopThreshold = 1f;
+
+            if (vertical > 0f)
             {
-                // Brake immediately on negative input (S)
-                brakeTorque = brakeForce;
-                IsBraking = true;
+                if (currentSpeed < -stopThreshold)
+                {
+                    brakeTorque = brakeForce;
+                    IsBraking = true;
+                }
+                else
+                {
+                    motorTorque = vertical * motorForce;
+                }
             }
-            else if (vertical > 0f)
+            else if (vertical < 0f)
             {
-                // Accelerate forward
-                motorTorque = vertical * motorForce;
+                if (currentSpeed > stopThreshold)
+                {
+                    brakeTorque = brakeForce;
+                    IsBraking = true;
+                }
+                else
+                {
+                    motorTorque = vertical * motorForce * 0.6f;
+                }
             }
             else
             {
-                // Light rolling resistance
                 brakeTorque = 0.05f * brakeForce;
             }
 
@@ -89,7 +120,12 @@ namespace _RacingGamePrototype.Scripts.Car
 
             foreach (var wheel in frontWheels)
                 wheel.brakeTorque = brakeTorque;
+            
+            //Debug.Log($"BrakeTorque {brakeTorque}, MotorTorque {motorTorque}, Vel {_rb.linearVelocity.magnitude}");
+
+            
         }
+
 
         private void HandleSteering()
         {
@@ -104,7 +140,7 @@ namespace _RacingGamePrototype.Scripts.Car
                 return;
 
             Vector3 localVel = transform.InverseTransformDirection(_rb.linearVelocity);
-            localVel.x *= turnDrag; // damp sideways drift only
+            localVel.x *= turnDrag;
             _rb.linearVelocity = transform.TransformDirection(localVel);
         }
 
@@ -114,25 +150,49 @@ namespace _RacingGamePrototype.Scripts.Car
             float steer = Mathf.Abs(_steerInput);
             float speed = _rb.linearVelocity.magnitude;
             bool coasting = throttle < 0.1f;
+            
+            float restoreSpeedMs = gripRestoreSpeed / 3.6f;
 
             // Base stiffness
-            float frontSide = 1.2f;
-            float rearSide  = 1.1f;
-            float forward   = 1.0f;
+            float frontSide = wheelGrip + 0.2f;
+            float rearSide  = wheelGrip + 0.1f;
+            float forward   = wheelGrip;
 
             // Lift-off balance
             if (coasting)
             {
+                _rb.AddTorque(transform.up * (_steerInput * 2f), ForceMode.Acceleration);
                 frontSide = 1.4f;
                 rearSide  = 0.9f;
                 forward   = 0.9f;
             }
+            
+            // drift and slip
+            bool burnout = speed <= restoreSpeedMs;
 
-            // Drift scaling
-            if (speed > slipThreshold && steer > 0.1f)
+            if (_isDrifting)
             {
-                frontSide *= Mathf.Lerp(1f, 0.8f, steer);
-                rearSide  *= Mathf.Lerp(1f, 0.6f, steer);
+                frontSide *= 0.9f;
+                rearSide  *= 0.5f;
+                forward   *= 0.8f;
+            }
+            else
+            {
+                frontSide = Mathf.Max(frontSide, 1.2f);
+                rearSide  = Mathf.Max(rearSide, 1.1f);
+                forward   = Mathf.Max(forward, 1.0f);
+            }
+
+
+            if (burnout)
+            {
+                rearSide *= Mathf.Lerp(1f, 0.1f, steer);
+                forward *= 0.7f;
+            }
+            else
+            {
+                rearSide  = Mathf.Max(rearSide, 1.1f);
+                forward   = Mathf.Max(forward, 1.0f);
             }
 
             foreach (var f in frontWheels)
@@ -146,6 +206,9 @@ namespace _RacingGamePrototype.Scripts.Car
                 var fr = r.sidewaysFriction; fr.stiffness = rearSide;  r.sidewaysFriction = fr;
                 var ff = r.forwardFriction;  ff.stiffness = forward;   r.forwardFriction  = ff;
             }
+            
+            //Debug.Log($"FrontSide: {frontSide}, RearSide: {rearSide}, Forward: {forward}");
         }
+
     }
 }
