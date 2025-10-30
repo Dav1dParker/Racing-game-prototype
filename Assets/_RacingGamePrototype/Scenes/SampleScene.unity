@@ -1472,6 +1472,7 @@ GameObject:
   - component: {fileID: 642579433}
   - component: {fileID: 642579434}
   - component: {fileID: 642579435}
+  - component: {fileID: 642579436}
   m_Layer: 0
   m_Name: CinemachineCamera
   m_TagString: Untagged
@@ -1556,6 +1557,24 @@ MonoBehaviour:
     RotationDamping: {x: 0.8, y: 0.3, z: 0.3}
     QuaternionDamping: 1
   FollowOffset: {x: 0, y: 4.64, z: -10}
+--- !u!114 &642579436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 642579432}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65fd30c03cdb07e419af6d1d14594029, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::_RacingGamePrototype.Scripts.World.CameraController
+  car: {fileID: 1044810894}
+  baseFOV: 40
+  fovAtMaxSpeed: 150
+  maxFOV: 50
+  boostFOV: 70
+  smooth: 5
 --- !u!1 &699317726
 GameObject:
   m_ObjectHideFlags: 0

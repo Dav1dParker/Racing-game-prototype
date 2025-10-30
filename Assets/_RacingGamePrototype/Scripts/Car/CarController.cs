@@ -256,6 +256,7 @@ namespace _RacingGamePrototype.Scripts.Car
         private IEnumerator BoostRoutine()
         {
             _canBoost = false;
+            _isBoosting = true;
             _cooldownRemaining = boostCooldown;
             
             SetVibration(0.8f, 1.0f);
@@ -268,6 +269,7 @@ namespace _RacingGamePrototype.Scripts.Car
                 yield return new WaitForFixedUpdate();
             }
             
+            _isBoosting = false;
             SetVibration(0f, 0f);
             
             while (_cooldownRemaining > 0f)
@@ -292,6 +294,8 @@ namespace _RacingGamePrototype.Scripts.Car
         {
             return _boostCooldownProgress;
         }
+        
+        public bool isBoosting() => _isBoosting;
 
         
         private void UpdateDriftState()
