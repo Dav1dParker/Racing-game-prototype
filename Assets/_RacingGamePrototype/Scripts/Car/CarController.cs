@@ -15,6 +15,8 @@ namespace _RacingGamePrototype.Scripts.Car
         [SerializeField] private float motorForce = 1500f;
         [SerializeField] private float brakeForce = 3000f;
         [SerializeField] private float maxSteerAngle = 30f;
+        [SerializeField] private float minSteerAngle = 10f;
+        [SerializeField] private float steerFadeSpeed = 60f;
         
         [Header("Physics settings")]
         [SerializeField] private float turnDrag = 0.98f;
@@ -25,6 +27,8 @@ namespace _RacingGamePrototype.Scripts.Car
         //[SerializeField] private float driftHoldTime = 2f;
         [SerializeField] private float driftGChangeThreshold = 0.4f;
         [SerializeField] private float driftRecoveryG = 0.4f;
+        [SerializeField] private float aeroDrag = 0.3f;
+        [SerializeField] private float rollingResistance = 50f;
 
         
         [Header("Boost settings")]
@@ -85,6 +89,7 @@ namespace _RacingGamePrototype.Scripts.Car
         {
             UpdateDriftState();
             HandleMotor();
+            ApplyAerodynamicDrag();
             HandleSteering();
             ApplyTurnResistance();
             UpdateGrip();
@@ -146,10 +151,18 @@ namespace _RacingGamePrototype.Scripts.Car
 
         private void HandleSteering()
         {
-            float steer = _steerInput * maxSteerAngle;
+            float speed = _rb.linearVelocity.magnitude;
+            float speedFactor = Mathf.Clamp01(speed / (steerFadeSpeed / 3.6f)); 
+            
+            float currentMaxSteer = Mathf.Lerp(maxSteerAngle, minSteerAngle, speedFactor);
+            
+            //Debug.Log(currentMaxSteer);
+            float steer = _steerInput * currentMaxSteer;
+
             foreach (var wheel in frontWheels)
                 wheel.steerAngle = steer;
         }
+
 
         private void ApplyTurnResistance()
         {
@@ -178,10 +191,10 @@ namespace _RacingGamePrototype.Scripts.Car
             // Lift-off balance
             if (coasting)
             {
-                _rb.AddTorque(transform.up * (_steerInput * 2f), ForceMode.Acceleration);
-                frontSide = 1.4f;
-                rearSide  = 0.9f;
-                forward   = 0.9f;
+                _rb.AddTorque(transform.up * (_steerInput * 0.5f), ForceMode.Acceleration);
+                frontSide *= 1.3f;
+                rearSide  *= 0.9f;
+                forward   *= 0.9f;
             }
             
             // drift and slip
@@ -283,8 +296,14 @@ namespace _RacingGamePrototype.Scripts.Car
                 _isDrifting = false;
             //Debug.Log($"Sideways G: {_sidewaysG:F2}, LateralAccel: {lateralAccel:F2}, Drifting: {_isDrifting}");
         }
-
-
+        
+        
+        private void ApplyAerodynamicDrag()
+        {
+            float speed = _rb.linearVelocity.magnitude;
+            Vector3 dragForce = -_rb.linearVelocity.normalized * (speed * speed * aeroDrag + rollingResistance);
+            _rb.AddForce(dragForce, ForceMode.Force);
+        }
         
     }
 }
