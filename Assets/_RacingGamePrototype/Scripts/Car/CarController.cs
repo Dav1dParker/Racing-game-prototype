@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,6 +26,12 @@ namespace _RacingGamePrototype.Scripts.Car
         //[SerializeField] private float slipThreshold = 5f;
         [SerializeField] private float driftGThreshold = 0.8f;
         [SerializeField] private float driftRecoveryG = 0.4f;
+        [SerializeField] private float driftHoldTime = 2f;
+        
+        [Header("Boost settings")]
+        [SerializeField] private float boostForce = 5000f;
+        [SerializeField] private float boostDuration = 2f;
+        [SerializeField] private float boostCooldown = 5f;
 
 
         private Rigidbody _rb;
@@ -32,6 +40,16 @@ namespace _RacingGamePrototype.Scripts.Car
         private InputSystem_Actions _carControls;
         private float _lateralG; 
         private bool _isDrifting;
+        private bool _isBoosting;
+        private float _boostTimer;
+        private float _cooldownRemaining = 0f;
+        private float _boostCooldownTimer;
+        private bool _canBoost = true;
+        private Coroutine _boostCoroutine;
+        private float _driftTimer = 0f;
+
+
+        private float _boostCooldownProgress = 1f;
 
         public bool IsBraking { get; private set; }
 
@@ -52,23 +70,15 @@ namespace _RacingGamePrototype.Scripts.Car
 
             _carControls.Player.Steer.performed += ctx => _steerInput = ctx.ReadValue<float>();
             _carControls.Player.Steer.canceled  += ctx => _steerInput = 0f;
+            
+            _carControls.Player.Boost.performed += ctx => TryBoost();
         }
 
         private void OnDisable() => _carControls.Disable();
 
         private void FixedUpdate()
         {
-            float lateralAccel = Mathf.Abs((_rb.angularVelocity.y * _rb.linearVelocity.magnitude)) / 9.81f; // G force
-            _lateralG = Mathf.Lerp(_lateralG, lateralAccel, Time.fixedDeltaTime * 10f);
-            
-            
-            if (!_isDrifting && _lateralG > driftGThreshold)
-                _isDrifting = true;
-            else if (_isDrifting && _lateralG < driftRecoveryG)
-                _isDrifting = false;
-            
-            Debug.Log(_lateralG);
-            
+            UpdateDriftState();
             HandleMotor();
             HandleSteering();
             ApplyTurnResistance();
@@ -210,6 +220,69 @@ namespace _RacingGamePrototype.Scripts.Car
             }
             
             //Debug.Log($"FrontSide: {frontSide}, RearSide: {rearSide}, Forward: {forward}");
+        }
+        
+        
+        
+        private void TryBoost()
+        {
+            if (!_canBoost) return;
+            _boostCoroutine = StartCoroutine(BoostRoutine());
+        }
+
+        private IEnumerator BoostRoutine()
+        {
+            _canBoost = false;
+            _cooldownRemaining = boostCooldown;
+            
+            float timer = boostDuration;
+            while (timer > 0f)
+            {
+                _rb.AddForce(transform.forward * boostForce, ForceMode.Acceleration);
+                timer -= Time.fixedDeltaTime;
+                _boostCooldownProgress = timer / boostDuration;
+                yield return new WaitForFixedUpdate();
+            }
+            
+            while (_cooldownRemaining > 0f)
+            {
+                _cooldownRemaining -= Time.deltaTime;
+                _boostCooldownProgress = 1f - (_cooldownRemaining / boostCooldown);
+                yield return null;
+            }
+
+            _canBoost = true;
+            _cooldownRemaining = 0f;
+        }
+        
+        public float getBoostCooldownProgress()
+        {
+            return _boostCooldownProgress;
+        }
+
+        
+        private void UpdateDriftState()
+        {
+            float lateralAccel = Mathf.Abs((_rb.angularVelocity.y * _rb.linearVelocity.magnitude)) / 9.81f;
+            _lateralG = Mathf.Lerp(_lateralG, lateralAccel, Time.fixedDeltaTime * 10f);
+            
+            if (_lateralG > driftGThreshold)
+            {
+                _driftTimer += Time.fixedDeltaTime;
+                if (!_isDrifting && _driftTimer >= driftHoldTime)
+                    _isDrifting = true;
+            }
+            else
+            {
+                _driftTimer = 0f;
+            }
+            
+            if (_isDrifting && _lateralG < driftRecoveryG)
+            {
+                _isDrifting = false;
+                _driftTimer = 0f;
+            }
+            Debug.Log(_isDrifting);
         }
 
     }
