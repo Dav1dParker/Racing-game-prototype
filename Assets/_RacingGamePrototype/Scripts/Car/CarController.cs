@@ -67,6 +67,8 @@ namespace _RacingGamePrototype.Scripts.Car
             else if (_isDrifting && _lateralG < driftRecoveryG)
                 _isDrifting = false;
             
+            Debug.Log(_lateralG);
+            
             HandleMotor();
             HandleSteering();
             ApplyTurnResistance();
