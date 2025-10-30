@@ -1,8 +1,5 @@
-using System;
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace _RacingGamePrototype.Scripts.Car
 {
@@ -24,9 +21,11 @@ namespace _RacingGamePrototype.Scripts.Car
         [SerializeField] private float gripRestoreSpeed = 20f;
         [SerializeField] private float wheelGrip = 2.0f;
         //[SerializeField] private float slipThreshold = 5f;
-        [SerializeField] private float driftGThreshold = 0.8f;
+        //[SerializeField] private float driftGThreshold = 0.8f;
+        //[SerializeField] private float driftHoldTime = 2f;
+        [SerializeField] private float driftGChangeThreshold = 0.4f;
         [SerializeField] private float driftRecoveryG = 0.4f;
-        [SerializeField] private float driftHoldTime = 2f;
+
         
         [Header("Boost settings")]
         [SerializeField] private float boostForce = 5000f;
@@ -38,15 +37,21 @@ namespace _RacingGamePrototype.Scripts.Car
         private float _throttleInput;
         private float _steerInput;
         private InputSystem_Actions _carControls;
-        private float _lateralG; 
+        //private float _lateralG; 
         private bool _isDrifting;
         private bool _isBoosting;
-        private float _boostTimer;
+        //private float _boostTimer;
         private float _cooldownRemaining = 0f;
-        private float _boostCooldownTimer;
+        //private float _boostCooldownTimer;
         private bool _canBoost = true;
         private Coroutine _boostCoroutine;
-        private float _driftTimer = 0f;
+        //private float _driftTimer = 0f;
+        //private float _lastLateralG;
+        //private float _gChange;
+        private Vector3 _lastLocalVelocity;
+        private float _sidewaysG;
+        private float _deltaG;
+        private float _lastSidewaysG;
 
 
         private float _boostCooldownProgress = 1f;
@@ -255,7 +260,7 @@ namespace _RacingGamePrototype.Scripts.Car
             _cooldownRemaining = 0f;
         }
         
-        public float getBoostCooldownProgress()
+        public float GetBoostCooldownProgress()
         {
             return _boostCooldownProgress;
         }
@@ -263,27 +268,23 @@ namespace _RacingGamePrototype.Scripts.Car
         
         private void UpdateDriftState()
         {
-            float lateralAccel = Mathf.Abs((_rb.angularVelocity.y * _rb.linearVelocity.magnitude)) / 9.81f;
-            _lateralG = Mathf.Lerp(_lateralG, lateralAccel, Time.fixedDeltaTime * 10f);
+            Vector3 localVel = transform.InverseTransformDirection(_rb.linearVelocity);
+            float lateralAccel = (localVel.x - _lastLocalVelocity.x) / Time.fixedDeltaTime;
+            _lastLocalVelocity = localVel;
+
+            _sidewaysG = Mathf.Abs(lateralAccel) / 9.81f;
             
-            if (_lateralG > driftGThreshold)
-            {
-                _driftTimer += Time.fixedDeltaTime;
-                if (!_isDrifting && _driftTimer >= driftHoldTime)
-                    _isDrifting = true;
-            }
-            else
-            {
-                _driftTimer = 0f;
-            }
+            _deltaG = Mathf.Abs((_sidewaysG - _lastSidewaysG) / Time.fixedDeltaTime);
+            _lastSidewaysG = _sidewaysG;
             
-            if (_isDrifting && _lateralG < driftRecoveryG)
-            {
+            if (!_isDrifting && _deltaG > driftGChangeThreshold)
+                _isDrifting = true;
+            else if (_isDrifting && _deltaG < driftRecoveryG)
                 _isDrifting = false;
-                _driftTimer = 0f;
-            }
-            Debug.Log(_isDrifting);
+            //Debug.Log($"Sideways G: {_sidewaysG:F2}, LateralAccel: {lateralAccel:F2}, Drifting: {_isDrifting}");
         }
 
+
+        
     }
 }

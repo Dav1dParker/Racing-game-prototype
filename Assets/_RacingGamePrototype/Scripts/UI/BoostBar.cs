@@ -12,7 +12,7 @@ namespace _RacingGamePrototype.Scripts.UI
 
         private void Update()
         {
-            fillImage.fillAmount = carController.getBoostCooldownProgress();
+            fillImage.fillAmount = carController.GetBoostCooldownProgress();
             if (fillImage.fillAmount >= 1f)
             {
                 backImage.color = Color.white;
