@@ -4,61 +4,50 @@ using UnityEngine.InputSystem;
 
 namespace _RacingGamePrototype.Scripts.Car
 {
-    public class CarController : MonoBehaviour
+    [RequireComponent(typeof(Rigidbody))]
+    public sealed class CarController : MonoBehaviour
     {
         [Header("Car setup")]
         [SerializeField] private Transform centerOfMass;
         [SerializeField] private WheelCollider[] frontWheels;
         [SerializeField] private WheelCollider[] rearWheels;
-        
+
         [Header("Car settings")]
         [SerializeField] private float motorForce = 1500f;
         [SerializeField] private float brakeForce = 3000f;
         [SerializeField] private float maxSteerAngle = 30f;
-        
+
         [Header("Physics settings")]
         [SerializeField] private float turnDrag = 0.98f;
         [SerializeField] private float slipThreshold = 5f;
 
-
         private Rigidbody _rb;
-        private Vector2 _moveInput;
-        private bool _breaking;
+        private float _throttleInput;
+        private float _steerInput;
         private InputSystem_Actions _carControls;
 
+        public bool IsBraking { get; private set; }
 
         private void Awake()
         {
             _carControls = new InputSystem_Actions();
             _rb = GetComponent<Rigidbody>();
             if (centerOfMass != null)
-            {
                 _rb.centerOfMass = centerOfMass.localPosition;
-            }
         }
-        
+
         private void OnEnable()
         {
             _carControls.Enable();
-            _carControls.Player.Move.performed += ctx => _moveInput = ctx.ReadValue<Vector2>();
-            _carControls.Player.Move.canceled  += ctx => _moveInput = Vector2.zero;
-            //_carControls.Player.Brake.performed += ctx => brakePressed = true;
-            //_carControls.Player.Brake.canceled  += ctx => brakePressed = false;
+
+            _carControls.Player.Throttle.performed += ctx => _throttleInput = ctx.ReadValue<float>();
+            _carControls.Player.Throttle.canceled  += ctx => _throttleInput = 0f;
+
+            _carControls.Player.Steer.performed += ctx => _steerInput = ctx.ReadValue<float>();
+            _carControls.Player.Steer.canceled  += ctx => _steerInput = 0f;
         }
 
-        private void OnDisable()
-        {
-            _carControls.Disable();
-        }
-
-        
-        public void OnMove(InputAction.CallbackContext ctx)
-        {
-            _moveInput = ctx.ReadValue<Vector2>();
-            if (ctx.performed)
-                Debug.Log($"Move input: {_moveInput}");
-        }
-
+        private void OnDisable() => _carControls.Disable();
 
         private void FixedUpdate()
         {
@@ -67,51 +56,44 @@ namespace _RacingGamePrototype.Scripts.Car
             ApplyTurnResistance();
             UpdateGrip();
         }
-        
-        
+
         private void HandleMotor()
         {
-            float vertical = _moveInput.y;
-            float currentSpeed = Vector3.Dot(_rb.linearVelocity,transform.forward);
-            bool movingForward = currentSpeed > 1f;
-            bool movingBackward = currentSpeed < -1f;
-            float motorTorque = 0;
-            float brakeTorque = 0;
+            float vertical = _throttleInput;
+            float motorTorque = 0f;
+            float brakeTorque = 0f;
+            IsBraking = false;
 
-            if (vertical > 0f)
+            if (vertical < 0f)
             {
-                if (movingBackward)
-                    brakeTorque = brakeForce;
-                else
-                    motorTorque = vertical * motorForce;
+                // Brake immediately on negative input (S)
+                brakeTorque = brakeForce;
+                IsBraking = true;
             }
-            else if (vertical < 0f)
+            else if (vertical > 0f)
             {
-                if (movingForward)
-                    brakeTorque = brakeForce;
-                else
-                    motorTorque = vertical * motorForce;
+                // Accelerate forward
+                motorTorque = vertical * motorForce;
             }
             else
             {
-                brakeTorque = 0.1f * brakeForce;
+                // Light rolling resistance
+                brakeTorque = 0.05f * brakeForce;
             }
 
-            foreach (WheelCollider wheel in rearWheels)
+            foreach (var wheel in rearWheels)
             {
                 wheel.motorTorque = motorTorque;
                 wheel.brakeTorque = brakeTorque;
             }
 
-            foreach (WheelCollider wheel in frontWheels)
-            {
+            foreach (var wheel in frontWheels)
                 wheel.brakeTorque = brakeTorque;
-            }
         }
 
         private void HandleSteering()
         {
-            float steer = _moveInput.x * maxSteerAngle;
+            float steer = _steerInput * maxSteerAngle;
             foreach (var wheel in frontWheels)
                 wheel.steerAngle = steer;
         }
@@ -122,25 +104,23 @@ namespace _RacingGamePrototype.Scripts.Car
                 return;
 
             Vector3 localVel = transform.InverseTransformDirection(_rb.linearVelocity);
-            localVel.x *= turnDrag;
-
+            localVel.x *= turnDrag; // damp sideways drift only
             _rb.linearVelocity = transform.TransformDirection(localVel);
         }
 
         private void UpdateGrip()
         {
-            float throttle = Mathf.Abs(_moveInput.y);
-            float steer    = Mathf.Abs(_moveInput.x);
-            float speed    = _rb.linearVelocity.magnitude;
+            float throttle = Mathf.Abs(_throttleInput);
+            float steer = Mathf.Abs(_steerInput);
+            float speed = _rb.linearVelocity.magnitude;
+            bool coasting = throttle < 0.1f;
 
-            bool coasting  = throttle < 0.1f;
-
-            // base
+            // Base stiffness
             float frontSide = 1.2f;
             float rearSide  = 1.1f;
             float forward   = 1.0f;
 
-            // lift-off
+            // Lift-off balance
             if (coasting)
             {
                 frontSide = 1.4f;
@@ -148,8 +128,8 @@ namespace _RacingGamePrototype.Scripts.Car
                 forward   = 0.9f;
             }
 
-            // Drift
-            if (speed > 10f && steer > 0.1f)
+            // Drift scaling
+            if (speed > slipThreshold && steer > 0.1f)
             {
                 frontSide *= Mathf.Lerp(1f, 0.8f, steer);
                 rearSide  *= Mathf.Lerp(1f, 0.6f, steer);
@@ -167,35 +147,5 @@ namespace _RacingGamePrototype.Scripts.Car
                 var ff = r.forwardFriction;  ff.stiffness = forward;   r.forwardFriction  = ff;
             }
         }
-
-        
-        private static void SetSidewaysStiffness(WheelCollider wheel, float stiffness)
-        {
-            var fric = wheel.sidewaysFriction;
-            fric.stiffness = stiffness;
-            wheel.sidewaysFriction = fric;
-        }
-        
-        private void UpdateSteeringGrip()
-        {
-            float throttle = Mathf.Abs(_moveInput.y);
-            bool coasting = throttle < 0.1f;
-
-            foreach (var front in frontWheels)
-            {
-                var f = front.sidewaysFriction;
-                f.stiffness = coasting ? 1.3f : 1.0f;
-                front.sidewaysFriction = f;
-            }
-
-            foreach (var rear in rearWheels)
-            {
-                var f = rear.sidewaysFriction;
-                f.stiffness = coasting ? 0.9f : 1.0f;
-                rear.sidewaysFriction = f;
-            }
-        }
-
     }
 }
-
