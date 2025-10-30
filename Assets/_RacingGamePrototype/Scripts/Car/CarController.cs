@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace _RacingGamePrototype.Scripts.Car
 {
@@ -83,7 +84,11 @@ namespace _RacingGamePrototype.Scripts.Car
             _carControls.Player.Boost.performed += ctx => TryBoost();
         }
 
-        private void OnDisable() => _carControls.Disable();
+        private void OnDisable()
+        {
+            SetVibration(0f, 0f);
+            _carControls.Disable();
+        }
 
         private void FixedUpdate()
         {
@@ -253,6 +258,7 @@ namespace _RacingGamePrototype.Scripts.Car
             _canBoost = false;
             _cooldownRemaining = boostCooldown;
             
+            SetVibration(0.8f, 1.0f);
             float timer = boostDuration;
             while (timer > 0f)
             {
@@ -261,6 +267,8 @@ namespace _RacingGamePrototype.Scripts.Car
                 _boostCooldownProgress = timer / boostDuration;
                 yield return new WaitForFixedUpdate();
             }
+            
+            SetVibration(0f, 0f);
             
             while (_cooldownRemaining > 0f)
             {
@@ -272,6 +280,13 @@ namespace _RacingGamePrototype.Scripts.Car
             _canBoost = true;
             _cooldownRemaining = 0f;
         }
+        
+        private void SetVibration(float low, float high)
+        {
+            if (Gamepad.current != null)
+                Gamepad.current.SetMotorSpeeds(low, high);
+        }
+
         
         public float GetBoostCooldownProgress()
         {
