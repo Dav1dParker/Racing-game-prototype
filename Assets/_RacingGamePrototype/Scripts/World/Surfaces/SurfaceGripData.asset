@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f37b10c9a05007546842dd07a3c0281c, type: 3}
+  m_Name: SurfaceGripData
+  m_EditorClassIdentifier: Assembly-CSharp::_RacingGamePrototype.Scripts.World.Surfaces.SurfaceGripData
+  entries:
+  - type: 0
+    gripMultiplier: 1
+    tag: Asphalt
+  - type: 1
+    gripMultiplier: 0.8
+    tag: Dirt
+  - type: 2
+    gripMultiplier: 0.7
+    tag: Grass
+  - type: 3
+    gripMultiplier: 0.5
+    tag: Sand
+  - type: 4
+    gripMultiplier: 0.3
+    tag: Ice

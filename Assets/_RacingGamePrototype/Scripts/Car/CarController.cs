@@ -1,4 +1,5 @@
 using System.Collections;
+using _RacingGamePrototype.Scripts.World.Surfaces;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -30,6 +31,7 @@ namespace _RacingGamePrototype.Scripts.Car
         [SerializeField] private float driftRecoveryG = 0.4f;
         [SerializeField] private float aeroDrag = 0.3f;
         [SerializeField] private float rollingResistance = 50f;
+        [SerializeField] private SurfaceGripData surfaceGripData;
 
         
         [Header("Boost settings")]
@@ -58,6 +60,7 @@ namespace _RacingGamePrototype.Scripts.Car
         private float _sidewaysG;
         private float _deltaG;
         private float _lastSidewaysG;
+        private float _surfaceGrip = 1f;
 
 
         private float _boostCooldownProgress = 1f;
@@ -93,6 +96,7 @@ namespace _RacingGamePrototype.Scripts.Car
 
         private void FixedUpdate()
         {
+            UpdateSurfaceGrip();
             UpdateDriftState();
             HandleMotor();
             ApplyAerodynamicDrag();
@@ -153,6 +157,23 @@ namespace _RacingGamePrototype.Scripts.Car
 
             
         }
+        
+        private void UpdateSurfaceGrip()
+        {
+            if (rearWheels.Length == 0) return;
+
+            if (rearWheels[0].GetGroundHit(out var hit))
+            {
+                string colliderTag = hit.collider.tag;
+                _surfaceGrip = surfaceGripData ? surfaceGripData.GetGripForTag(colliderTag) : 1f;
+                //Debug.Log(surfaceGripData.GetGripForTag(colliderTag));
+            }
+            else
+            {
+                _surfaceGrip = 1f;
+            }
+        }
+
 
 
         private void HandleSteering()
@@ -190,9 +211,9 @@ namespace _RacingGamePrototype.Scripts.Car
             float restoreSpeedMs = gripRestoreSpeed / 3.6f;
 
             // Base stiffness
-            float frontSide = wheelGrip + 0.2f;
-            float rearSide  = wheelGrip + 0.1f;
-            float forward   = wheelGrip;
+            float frontSide = (wheelGrip + 0.2f) * _surfaceGrip;
+            float rearSide  = (wheelGrip + 0.1f) * _surfaceGrip;
+            float forward   = wheelGrip * _surfaceGrip;
 
             // Lift-off balance
             if (coasting)
@@ -214,9 +235,9 @@ namespace _RacingGamePrototype.Scripts.Car
             }
             else
             {
-                frontSide = Mathf.Max(frontSide, 1.2f);
-                rearSide  = Mathf.Max(rearSide, 1.1f);
-                forward   = Mathf.Max(forward, 1.0f);
+                frontSide = Mathf.Min(frontSide + restoreSpeedMs * Time.fixedDeltaTime, (wheelGrip + 0.2f) * _surfaceGrip);
+                rearSide  = Mathf.Min(rearSide  + restoreSpeedMs * Time.fixedDeltaTime, (wheelGrip + 0.1f) * _surfaceGrip);
+                forward   = Mathf.Min(forward   + restoreSpeedMs * Time.fixedDeltaTime, wheelGrip * _surfaceGrip);
             }
 
 
@@ -227,8 +248,8 @@ namespace _RacingGamePrototype.Scripts.Car
             }
             else
             {
-                rearSide  = Mathf.Max(rearSide, 1.1f);
-                forward   = Mathf.Max(forward, 1.0f);
+                rearSide = Mathf.Min(rearSide + restoreSpeedMs * Time.fixedDeltaTime, (wheelGrip + 0.1f) * _surfaceGrip);
+                forward  = Mathf.Min(forward  + restoreSpeedMs * Time.fixedDeltaTime, wheelGrip * _surfaceGrip);
             }
 
             foreach (var f in frontWheels)
@@ -243,7 +264,7 @@ namespace _RacingGamePrototype.Scripts.Car
                 var ff = r.forwardFriction;  ff.stiffness = forward;   r.forwardFriction  = ff;
             }
             
-            //Debug.Log($"FrontSide: {frontSide}, RearSide: {rearSide}, Forward: {forward}");
+            Debug.Log($"FrontSide: {frontSide}, RearSide: {rearSide}, Forward: {forward}, SurfaceGrip: {_surfaceGrip}");
         }
         
         
