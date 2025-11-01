@@ -1,16 +1,18 @@
+using _RacingGamePrototype.Scripts.Car;
 using UnityEngine;
 
-public class RechargePickup : MonoBehaviour
+namespace _RacingGamePrototype.Scripts.World
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public class RechargePickup : PickableItem
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        protected override void OnPickedUp(Collider collector)
+        {
+            var car = collector.GetComponent<CarController>();
+            if (car)
+            {
+                car.RechargeBoost();
+            }
+        }
     }
 }
+

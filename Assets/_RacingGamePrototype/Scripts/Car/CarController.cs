@@ -46,10 +46,10 @@ namespace _RacingGamePrototype.Scripts.Car
         private bool _isDrifting;
         private bool _isBoosting;
         //private float _boostTimer;
-        private float _cooldownRemaining = 0f;
+        private float _cooldownRemaining;
         //private float _boostCooldownTimer;
         private bool _canBoost = true;
-        private bool _isPickupBoosting = false;
+        private bool _isPickupBoosting;
         private Coroutine _boostCoroutine;
         //private float _driftTimer = 0f;
         //private float _lastLateralG;
@@ -271,11 +271,15 @@ namespace _RacingGamePrototype.Scripts.Car
 
             _boostCoroutine = StartCoroutine(BoostRoutine(force, duration, ignoreCooldown));
         }
+        
+        public void RechargeBoost()
+        {
+            _cooldownRemaining = 0f;
+            _boostCooldownProgress = 1f;
+            _canBoost = true;
+        }
 
-
-
-
-
+        
         private IEnumerator BoostRoutine(float force, float duration, bool ignoreCooldown)
         {
             if (!ignoreCooldown)
