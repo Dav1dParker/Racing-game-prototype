@@ -49,6 +49,7 @@ namespace _RacingGamePrototype.Scripts.Car
         private float _cooldownRemaining = 0f;
         //private float _boostCooldownTimer;
         private bool _canBoost = true;
+        private bool _isPickupBoosting = false;
         private Coroutine _boostCoroutine;
         //private float _driftTimer = 0f;
         //private float _lastLateralG;
@@ -249,39 +250,88 @@ namespace _RacingGamePrototype.Scripts.Car
         
         private void TryBoost()
         {
-            if (!_canBoost) return;
-            _boostCoroutine = StartCoroutine(BoostRoutine());
+            StartBoost(boostForce, boostDuration, false);
         }
 
-        private IEnumerator BoostRoutine()
+        public void ApplyInstantBoost(float force, float duration)
         {
-            _canBoost = false;
-            _isBoosting = true;
-            _cooldownRemaining = boostCooldown;
-            
+            StartBoost(force, duration, true);
+        }
+
+        private void StartBoost(float force, float duration, bool ignoreCooldown)
+        {
+            if (!ignoreCooldown)
+            {
+                // Player boost → obey cooldown
+                if (!_canBoost) return;
+
+                if (_boostCoroutine != null)
+                    StopCoroutine(_boostCoroutine);
+            }
+
+            _boostCoroutine = StartCoroutine(BoostRoutine(force, duration, ignoreCooldown));
+        }
+
+
+
+
+
+        private IEnumerator BoostRoutine(float force, float duration, bool ignoreCooldown)
+        {
+            if (!ignoreCooldown)
+            {
+                // Start normal boost only if ready
+                if (!_canBoost) yield break;
+                _canBoost = false;
+                _cooldownRemaining = boostCooldown;
+                _isBoosting = true;
+            }
+            else
+            {
+                _isPickupBoosting = true;
+            }
+
             SetVibration(0.8f, 1.0f);
-            float timer = boostDuration;
+
+            float timer = duration;
             while (timer > 0f)
             {
-                _rb.AddForce(transform.forward * boostForce, ForceMode.Acceleration);
+                _rb.AddForce(transform.forward * force, ForceMode.Acceleration);
                 timer -= Time.fixedDeltaTime;
-                _boostCooldownProgress = timer / boostDuration;
+
+                // For UI: during boost, go from 1 → 0
+                if (!ignoreCooldown)
+                    _boostCooldownProgress = Mathf.Clamp01(timer / duration);
+
                 yield return new WaitForFixedUpdate();
             }
-            
-            _isBoosting = false;
+
             SetVibration(0f, 0f);
-            
+
+            if (ignoreCooldown)
+            {
+                _isPickupBoosting = false;
+                yield break; // skip cooldown
+            }
+
+            _isBoosting = false;
+
+            // Cooldown phase: progress goes 0 → 1
             while (_cooldownRemaining > 0f)
             {
                 _cooldownRemaining -= Time.deltaTime;
-                _boostCooldownProgress = 1f - (_cooldownRemaining / boostCooldown);
+                _boostCooldownProgress = 1f - Mathf.Clamp01(_cooldownRemaining / boostCooldown);
                 yield return null;
             }
 
             _canBoost = true;
             _cooldownRemaining = 0f;
+            _boostCooldownProgress = 1f;
         }
+
+
+
+
         
         private void SetVibration(float low, float high)
         {
@@ -295,7 +345,7 @@ namespace _RacingGamePrototype.Scripts.Car
             return _boostCooldownProgress;
         }
         
-        public bool isBoosting() => _isBoosting;
+        public bool IsBoosting() => _isBoosting;
 
         
         private void UpdateDriftState()
@@ -323,6 +373,8 @@ namespace _RacingGamePrototype.Scripts.Car
             Vector3 dragForce = -_rb.linearVelocity.normalized * (speed * speed * aeroDrag + rollingResistance);
             _rb.AddForce(dragForce, ForceMode.Force);
         }
+        
+
         
     }
 }

@@ -32,7 +32,7 @@ namespace _RacingGamePrototype.Scripts.World
             if (!_rb || !_virtualCamera) return;
 
             float targetFOV;
-            if (car.isBoosting())
+            if (car.IsBoosting())
             {
                 targetFOV = boostFOV;
             }
