@@ -264,7 +264,7 @@ namespace _RacingGamePrototype.Scripts.Car
                 var ff = r.forwardFriction;  ff.stiffness = forward;   r.forwardFriction  = ff;
             }
             
-            Debug.Log($"FrontSide: {frontSide}, RearSide: {rearSide}, Forward: {forward}, SurfaceGrip: {_surfaceGrip}");
+            //Debug.Log($"FrontSide: {frontSide}, RearSide: {rearSide}, Forward: {forward}, SurfaceGrip: {_surfaceGrip}");
         }
         
         
@@ -283,7 +283,6 @@ namespace _RacingGamePrototype.Scripts.Car
         {
             if (!ignoreCooldown)
             {
-                // Player boost → obey cooldown
                 if (!_canBoost) return;
 
                 if (_boostCoroutine != null)
@@ -305,7 +304,6 @@ namespace _RacingGamePrototype.Scripts.Car
         {
             if (!ignoreCooldown)
             {
-                // Start normal boost only if ready
                 if (!_canBoost) yield break;
                 _canBoost = false;
                 _cooldownRemaining = boostCooldown;
@@ -323,8 +321,7 @@ namespace _RacingGamePrototype.Scripts.Car
             {
                 _rb.AddForce(transform.forward * force, ForceMode.Acceleration);
                 timer -= Time.fixedDeltaTime;
-
-                // For UI: during boost, go from 1 → 0
+                
                 if (!ignoreCooldown)
                     _boostCooldownProgress = Mathf.Clamp01(timer / duration);
 
@@ -336,12 +333,11 @@ namespace _RacingGamePrototype.Scripts.Car
             if (ignoreCooldown)
             {
                 _isPickupBoosting = false;
-                yield break; // skip cooldown
+                yield break;
             }
 
             _isBoosting = false;
-
-            // Cooldown phase: progress goes 0 → 1
+            
             while (_cooldownRemaining > 0f)
             {
                 _cooldownRemaining -= Time.deltaTime;
