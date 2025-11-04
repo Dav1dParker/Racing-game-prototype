@@ -12,6 +12,7 @@ namespace _RacingGamePrototype.Scripts.Car
         [SerializeField] private Transform centerOfMass;
         [SerializeField] private WheelCollider[] frontWheels;
         [SerializeField] private WheelCollider[] rearWheels;
+        [SerializeField] private DriveType driveType = DriveType.RWD;
 
         [Header("Car settings")]
         [SerializeField] private float motorForce = 1500f;
@@ -43,6 +44,7 @@ namespace _RacingGamePrototype.Scripts.Car
         private Rigidbody _rb;
         private float _throttleInput;
         private float _steerInput;
+        private enum DriveType { FWD, RWD, AWD }
         private InputSystem_Actions _carControls;
         //private float _lateralG; 
         private bool _isDrifting;
@@ -144,14 +146,33 @@ namespace _RacingGamePrototype.Scripts.Car
                 brakeTorque = 0.05f * brakeForce;
             }
 
-            foreach (var wheel in rearWheels)
-            {
-                wheel.motorTorque = motorTorque;
-                wheel.brakeTorque = brakeTorque;
-            }
+            foreach (var f in frontWheels)
+                f.brakeTorque = brakeTorque;
+            foreach (var r in rearWheels)
+                r.brakeTorque = brakeTorque;
 
-            foreach (var wheel in frontWheels)
-                wheel.brakeTorque = brakeTorque;
+            switch (driveType)
+            {
+                case DriveType.FWD:
+                    foreach (var w in frontWheels)
+                        w.motorTorque = motorTorque;
+                    foreach (var w in rearWheels)
+                        w.motorTorque = 0f;
+                    break;
+                case DriveType.RWD:
+                    foreach (var w in rearWheels)
+                        w.motorTorque = motorTorque;
+                    foreach (var w in frontWheels)
+                        w.motorTorque = 0f;
+                    break;
+                case DriveType.AWD:
+                    float halfTorque = motorTorque * 0.5f;
+                    foreach (var w in frontWheels)
+                        w.motorTorque = halfTorque;
+                    foreach (var w in rearWheels)
+                        w.motorTorque = halfTorque;
+                    break;
+            }
             
             //Debug.Log($"BrakeTorque {brakeTorque}, MotorTorque {motorTorque}, Vel {_rb.linearVelocity.magnitude}");
 
