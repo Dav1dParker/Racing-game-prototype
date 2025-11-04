@@ -51,9 +51,10 @@ namespace _RacingGamePrototype.Scripts.Car
         private bool _isBoosting;
         //private float _boostTimer;
         private float _cooldownRemaining;
+        private float _boostRemaining;
         //private float _boostCooldownTimer;
         private bool _canBoost = true;
-        private bool _isPickupBoosting;
+        //private bool _isPickupBoosting;
         private Coroutine _boostCoroutine;
         //private float _driftTimer = 0f;
         //private float _lastLateralG;
@@ -317,10 +318,19 @@ namespace _RacingGamePrototype.Scripts.Car
         
         public void RechargeBoost()
         {
-            _cooldownRemaining = 0f;
-            _boostCooldownProgress = 1f;
-            _canBoost = true;
+            if (_isBoosting)
+            {
+                _boostRemaining = Mathf.Max(_boostRemaining, 0f);
+                _boostRemaining += boostDuration;
+            }
+            else
+            {
+                _cooldownRemaining = 0f;
+                _boostCooldownProgress = 1f;
+                _canBoost = true;
+            }
         }
+
 
         
         private IEnumerator BoostRoutine(float force, float duration, bool ignoreCooldown)
@@ -332,21 +342,17 @@ namespace _RacingGamePrototype.Scripts.Car
                 _cooldownRemaining = boostCooldown;
                 _isBoosting = true;
             }
-            else
-            {
-                _isPickupBoosting = true;
-            }
 
             SetVibration(0.8f, 1.0f);
+            _boostRemaining = duration;
 
-            float timer = duration;
-            while (timer > 0f)
+            while (_boostRemaining > 0f)
             {
                 _rb.AddForce(transform.forward * force, ForceMode.Acceleration);
-                timer -= Time.fixedDeltaTime;
-                
+                _boostRemaining -= Time.fixedDeltaTime;
+
                 if (!ignoreCooldown)
-                    _boostCooldownProgress = Mathf.Clamp01(timer / duration);
+                    _boostCooldownProgress = Mathf.Clamp01(_boostRemaining / duration);
 
                 yield return new WaitForFixedUpdate();
             }
@@ -355,12 +361,11 @@ namespace _RacingGamePrototype.Scripts.Car
 
             if (ignoreCooldown)
             {
-                _isPickupBoosting = false;
                 yield break;
             }
 
             _isBoosting = false;
-            
+
             while (_cooldownRemaining > 0f)
             {
                 _cooldownRemaining -= Time.deltaTime;
@@ -372,6 +377,7 @@ namespace _RacingGamePrototype.Scripts.Car
             _cooldownRemaining = 0f;
             _boostCooldownProgress = 1f;
         }
+
 
 
 
