@@ -14,7 +14,10 @@ namespace _RacingGamePrototype.Scripts.UI
             if (!LapManager.Instance) return;
 
             float current = LapManager.Instance.CurrentLapTime;
-            float best = LapManager.Instance.BestLapTime;
+            float best;
+            if (LapManager.Instance.IsReversed)  best = LapManager.Instance.BestLapTimeReverse;
+            else best = LapManager.Instance.BestLapTimeForward;
+            
 
             currentLapText.text = $"Lap: {FormatTime(current)}";
             bestLapText.text = best < Mathf.Infinity 

@@ -68,6 +68,8 @@ namespace _RacingGamePrototype.Scripts.Car
         private float _boostCooldownProgress = 1f;
 
         public bool IsBraking { get; private set; }
+        
+        public Rigidbody Rigidbody => _rb;
 
         private void Awake()
         {

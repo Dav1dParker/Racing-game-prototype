@@ -9,16 +9,20 @@ namespace _RacingGamePrototype.Scripts.LapSystem
         [Header("Lap Settings")]
         [SerializeField] private int totalCheckpoints = 3;
 
-        private int _nextCheckpoint = 0;
+        private int _nextCheckpoint;
         private float _lapStartTime;
         private float _currentLapTime;
-        private float _bestLapTime = Mathf.Infinity;
-        private bool _lapActive = false;
-        private bool _hasStarted = false;
-        private bool _allCheckpointsPassed = false;
+        private float _bestLapTimeForward = Mathf.Infinity;
+        private float _bestLapTimeReverse = Mathf.Infinity;
+        private bool _lapActive;
+        private bool _hasStarted;
+        private bool _allCheckpointsPassed;
+        private bool _reversed;
 
         public float CurrentLapTime => _currentLapTime;
-        public float BestLapTime => _bestLapTime;
+        public float BestLapTimeForward => _bestLapTimeForward;
+        public float BestLapTimeReverse => _bestLapTimeReverse;
+        public bool IsReversed => _reversed;
 
         private void Awake()
         {
@@ -31,34 +35,74 @@ namespace _RacingGamePrototype.Scripts.LapSystem
                 _currentLapTime = Time.time - _lapStartTime;
         }
 
+        public void ReverseTrack()
+        {
+            _reversed = !_reversed;
+            ResetLapState();
+            Debug.Log($"Track direction reversed: {_reversed}");
+        }
+
+        public void ResetLapState()
+        {
+            _lapActive = false;
+            _hasStarted = false;
+            _allCheckpointsPassed = false;
+            _currentLapTime = 0f;
+            _nextCheckpoint = _reversed ? totalCheckpoints - 1 : 0;
+            _lapStartTime = 0f;
+            Debug.Log("Lap state reset");
+        }
+
         public void OnCheckpointPassed(int index)
         {
-            if (!_hasStarted && index == 0)
+            if (!_hasStarted)
             {
-                StartNewLap();
-                _hasStarted = true;
+                if ((!_reversed && index == 0) || (_reversed && index == totalCheckpoints - 1))
+                {
+                    StartNewLap();
+                    _hasStarted = true;
+                }
                 return;
             }
 
             if (!_lapActive)
                 return;
-            
-            if (index == _nextCheckpoint)
+
+            if (!_reversed)
             {
-                _nextCheckpoint++;
-                
-                if (_nextCheckpoint >= totalCheckpoints)
+                if (index == _nextCheckpoint)
                 {
-                    _allCheckpointsPassed = true;
-                    _nextCheckpoint = 0;
+                    _nextCheckpoint++;
+                    if (_nextCheckpoint >= totalCheckpoints)
+                    {
+                        _allCheckpointsPassed = true;
+                        _nextCheckpoint = 0;
+                    }
                 }
-                
+
+                if (index == 0 && _allCheckpointsPassed)
+                {
+                    CompleteLap();
+                    StartNewLap();
+                }
             }
-            
-            if (index == 0 && _allCheckpointsPassed)
+            else
             {
-                CompleteLap();
-                StartNewLap();
+                if (index == _nextCheckpoint)
+                {
+                    _nextCheckpoint--;
+                    if (_nextCheckpoint < 0)
+                    {
+                        _allCheckpointsPassed = true;
+                        _nextCheckpoint = totalCheckpoints - 1;
+                    }
+                }
+
+                if (index == totalCheckpoints - 1 && _allCheckpointsPassed)
+                {
+                    CompleteLap();
+                    StartNewLap();
+                }
             }
         }
 
@@ -68,8 +112,8 @@ namespace _RacingGamePrototype.Scripts.LapSystem
             _currentLapTime = 0f;
             _lapActive = true;
             _allCheckpointsPassed = false;
-            _nextCheckpoint = 1;
-            Debug.Log("Lap started!");
+            _nextCheckpoint = _reversed ? totalCheckpoints - 2 : 1;
+            Debug.Log($"Lap started! Reversed: {_reversed}");
         }
 
         private void CompleteLap()
@@ -77,10 +121,21 @@ namespace _RacingGamePrototype.Scripts.LapSystem
             _lapActive = false;
             float lapTime = Time.time - _lapStartTime;
 
-            if (lapTime < _bestLapTime)
-                _bestLapTime = lapTime;
+            if (_reversed)
+            {
+                if (lapTime < _bestLapTimeReverse)
+                    _bestLapTimeReverse = lapTime;
+            }
+            else
+            {
+                if (lapTime < _bestLapTimeForward)
+                    _bestLapTimeForward = lapTime;
+            }
 
-            Debug.Log($"Lap finished! Time: {lapTime:F2}s, Best: {_bestLapTime:F2}s");
+            Debug.Log(
+                $"Lap finished! Time: {lapTime:F2}s | " +
+                $"Best FWD: {_bestLapTimeForward:F2}s | Best REV: {_bestLapTimeReverse:F2}s"
+            );
         }
     }
 }
