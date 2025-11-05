@@ -25,19 +25,31 @@ namespace _RacingGamePrototype.Scripts.World.Manager
 
         private void OnEnable()
         {
+            if (_controls == null)
+                _controls = new InputSystem_Actions();
+
             _controls.Enable();
-            _controls.Player.Respawn.performed += _ => RespawnCar();
-            _controls.Player.Reverse.performed += _ => ReverseTrack();
+            _controls.Player.Respawn.performed += OnRespawnPerformed;
+            _controls.Player.Reverse.performed += OnReversePerformed;
         }
 
         private void OnDisable()
         {
-            if (_controls != null)
-            {
-                _controls.Player.Respawn.performed -= _ => RespawnCar();
-                _controls.Player.Reverse.performed -= _ => ReverseTrack();
-                _controls.Disable();
-            }
+            if (_controls == null) return;
+
+            _controls.Player.Respawn.performed -= OnRespawnPerformed;
+            _controls.Player.Reverse.performed  -= OnReversePerformed;
+            _controls.Disable();
+        }
+        
+        private void OnRespawnPerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+        {
+            RespawnCar();
+        }
+
+        private void OnReversePerformed(UnityEngine.InputSystem.InputAction.CallbackContext ctx)
+        {
+            ReverseTrack();
         }
 
         private void Start()
@@ -53,32 +65,40 @@ namespace _RacingGamePrototype.Scripts.World.Manager
 
         private void RespawnCar()
         {
-            if (!car) return;
+            if (!car || !spawnPoint) return;
 
-            car.Rigidbody.linearVelocity = Vector3.zero;
-            car.Rigidbody.angularVelocity = Vector3.zero;
-            car.transform.SetPositionAndRotation(_spawnPosition, _spawnRotation);
+            var rb = car.Rigidbody;
+            var targetPos = spawnPoint.position;
+            var targetRot = _isReversed
+                ? spawnPoint.rotation * Quaternion.Euler(0f, 180f, 0f)
+                : spawnPoint.rotation;
+
+            // Temporarily disable physics so transform change sticks
+            rb.isKinematic = true;
+
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.position = targetPos;
+            rb.rotation = targetRot;
+
+            car.transform.SetPositionAndRotation(targetPos, targetRot);
+
+            rb.isKinematic = false;
+
             LapManager.Instance?.ResetLapState();
-            //Debug.Log("Car respawned");
         }
+
+
 
         private void ReverseTrack()
         {
-            if (!car) return;
+            if (!car || !spawnPoint) return;
 
             _isReversed = !_isReversed;
             LapManager.Instance?.ReverseTrack();
 
-            car.Rigidbody.linearVelocity = Vector3.zero;
-            car.Rigidbody.angularVelocity = Vector3.zero;
-
-            car.transform.position = _spawnPosition;
-            if (!_isReversed)
-                car.transform.rotation = _spawnRotation;
-            else
-                car.transform.rotation = _spawnRotation * Quaternion.Euler(0f, 180f, 0f);
-
-            Debug.Log("Track reversed and car flipped");
+            RespawnCar();
         }
+
     }
 }
