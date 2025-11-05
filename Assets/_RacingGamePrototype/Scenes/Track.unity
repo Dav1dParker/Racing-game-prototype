@@ -91265,6 +91265,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4775878668599805673, guid: 82dcaf3b8f85b8b46bec9af90222437d, type: 3}
+      propertyPath: m_Interpolate
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7277034688746424191, guid: 82dcaf3b8f85b8b46bec9af90222437d, type: 3}
       propertyPath: m_Name
       value: Hatchback Variant
