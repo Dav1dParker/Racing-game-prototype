@@ -466,6 +466,25 @@ namespace _RacingGamePrototype.Scripts.Car
             Vector3 dragForce = -_rb.linearVelocity.normalized * (speed * speed * aeroDrag + rollingResistance);
             _rb.AddForce(dragForce, ForceMode.Force);
         }
+
+        public void Reset()
+        {
+            if (_boostCoroutine != null)
+            {
+                StopCoroutine(_boostCoroutine);
+                _boostCoroutine = null;
+            }
+
+            SetVibration(0f, 0f);
+            EndBoostSound();
+
+            _isBoosting = false;
+            _canBoost = true;
+            _cooldownRemaining = 0f;
+            _boostRemaining = 0f;
+            _boostCooldownProgress = 1f;
+        }
+
         
 
         

@@ -91273,6 +91273,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hatchback Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 7841856782161342766, guid: 82dcaf3b8f85b8b46bec9af90222437d, type: 3}
+      propertyPath: boostForce
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 7841856782161342766, guid: 82dcaf3b8f85b8b46bec9af90222437d, type: 3}
+      propertyPath: boostCooldown
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7841856782161342766, guid: 82dcaf3b8f85b8b46bec9af90222437d, type: 3}
+      propertyPath: gripRestoreSpeed
+      value: 30
+      objectReference: {fileID: 0}
+    - target: {fileID: 7841856782161342766, guid: 82dcaf3b8f85b8b46bec9af90222437d, type: 3}
+      propertyPath: driftGChangeThreshold
+      value: 45
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

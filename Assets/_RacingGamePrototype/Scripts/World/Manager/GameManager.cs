@@ -67,6 +67,7 @@ namespace _RacingGamePrototype.Scripts.World.Manager
         {
             if (!car || !spawnPoint) return;
 
+            car.Reset();
             var rb = car.Rigidbody;
             var targetPos = spawnPoint.position;
             var targetRot = _isReversed
