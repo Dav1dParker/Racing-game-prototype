@@ -24,7 +24,7 @@ namespace _RacingGamePrototype.Scripts.LapSystem
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"Failed to save lap times: {e.Message}");
+                //Debug.LogError($"Failed to save lap times: {e.Message}");
             }
         }
 
@@ -32,18 +32,25 @@ namespace _RacingGamePrototype.Scripts.LapSystem
         {
             try
             {
-                if (File.Exists(SavePath))
+                if (!File.Exists(SavePath))
                 {
-                    string json = File.ReadAllText(SavePath);
-                    return JsonUtility.FromJson<LapTimeData>(json);
+                    var newData = new LapTimeData();
+                    Save(newData);
+                    //Debug.Log("BestLapTimes.json created with default values");
+                    return newData;
                 }
+
+                string json = File.ReadAllText(SavePath);
+                return JsonUtility.FromJson<LapTimeData>(json);
             }
             catch (System.Exception e)
             {
                 Debug.LogError($"Failed to load lap times: {e.Message}");
+                var fallback = new LapTimeData();
+                Save(fallback);
+                return fallback;
             }
-
-            return new LapTimeData();
         }
+
     }
 }

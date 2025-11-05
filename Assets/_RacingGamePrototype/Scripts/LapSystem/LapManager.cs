@@ -32,9 +32,11 @@ namespace _RacingGamePrototype.Scripts.LapSystem
         {
             Instance = this;
             _lapData = LapTimeStorage.Load();
+            LapTimeStorage.Save(_lapData);
             _bestLapTimeForward = _lapData.bestForward;
             _bestLapTimeReverse = _lapData.bestReverse;
         }
+
 
         private void Update()
         {
@@ -134,6 +136,7 @@ namespace _RacingGamePrototype.Scripts.LapSystem
                 if (lapTime < _lapData.bestReverse)
                 {
                     _lapData.bestReverse = lapTime;
+                    _bestLapTimeReverse = lapTime;
                     recordBroken = true;
                 }
             }
@@ -142,22 +145,16 @@ namespace _RacingGamePrototype.Scripts.LapSystem
                 if (lapTime < _lapData.bestForward)
                 {
                     _lapData.bestForward = lapTime;
+                    _bestLapTimeForward = lapTime;
                     recordBroken = true;
                 }
             }
 
             if (recordBroken)
-            {
                 LapTimeStorage.Save(_lapData);
-                Debug.Log($"New best lap saved! Forward: {_lapData.bestForward:F2} Reverse: {_lapData.bestReverse:F2}");
-            }
 
             OnLapFinished?.Invoke();
-
-            /*Debug.Log(
-                $"Lap finished! Time: {lapTime:F2}s | " +
-                $"Best FWD: {_bestLapTimeForward:F2}s | Best REV: {_bestLapTimeReverse:F2}s"
-            );*/
         }
+
     }
 }
