@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using _RacingGamePrototype.Scripts.LapSystem;
 
 namespace _RacingGamePrototype.Scripts.UI
 {
@@ -11,26 +10,26 @@ namespace _RacingGamePrototype.Scripts.UI
 
         private void Update()
         {
-            if (!LapManager.Instance) return;
+            if (!LapSystem.LapManager.Instance) return;
+            var manager = LapSystem.LapManager.Instance;
 
-            float current = LapManager.Instance.CurrentLapTime;
-            float best;
-            if (LapManager.Instance.IsReversed)  best = LapManager.Instance.BestLapTimeReverse;
-            else best = LapManager.Instance.BestLapTimeForward;
-            
+            float current = manager.CurrentLapTime;
+            float best = manager.IsReversed
+                ? manager.BestLapTimeReverse
+                : manager.BestLapTimeForward;
 
             currentLapText.text = $"Lap: {FormatTime(current)}";
-            bestLapText.text = best < Mathf.Infinity 
-                ? $"Best: {FormatTime(best)}" 
+            bestLapText.text = best < Mathf.Infinity
+                ? $"Best: {FormatTime(best)}"
                 : "Best: --:--.---";
         }
 
-        private static string FormatTime(float time)
+        private static string FormatTime(float t)
         {
-            int minutes = Mathf.FloorToInt(time / 60f);
-            int seconds = Mathf.FloorToInt(time % 60f);
-            int milliseconds = Mathf.FloorToInt((time * 1000f) % 1000f);
-            return $"{minutes:00}:{seconds:00}.{milliseconds:000}";
+            int minutes = Mathf.FloorToInt(t / 60f);
+            int seconds = Mathf.FloorToInt(t % 60f);
+            int ms = Mathf.FloorToInt((t * 1000f) % 1000f);
+            return $"{minutes:00}:{seconds:00}.{ms:000}";
         }
     }
 }

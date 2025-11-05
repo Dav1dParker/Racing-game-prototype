@@ -42,6 +42,8 @@ namespace _RacingGamePrototype.Scripts.World.Manager
 
         private void Start()
         {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
             if (spawnPoint)
             {
                 _spawnPosition = spawnPoint.position;
