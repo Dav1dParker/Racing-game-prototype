@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using _RacingGamePrototype.Scripts.World.Surfaces;
 using UnityEngine;
@@ -64,6 +65,9 @@ namespace _RacingGamePrototype.Scripts.Car
         private float _deltaG;
         private float _lastSidewaysG;
         private float _surfaceGrip = 1f;
+        private bool _usingGamepad;
+        private double _lastGamepadTime;
+        private double _lastKeyboardTime;
 
 
         private float _boostCooldownProgress = 1f;
@@ -71,6 +75,17 @@ namespace _RacingGamePrototype.Scripts.Car
         public bool IsBraking { get; private set; }
         
         public Rigidbody Rigidbody => _rb;
+        public static event Action OnBoostStart;
+        public static event Action OnBoostEnd;
+        public static event Action OnPickup;
+        
+        public static event Action OnRechargeBoost;
+        
+        
+        private void StartBoostSound() => OnBoostStart?.Invoke();
+        private void EndBoostSound() => OnBoostEnd?.Invoke();
+        private void PickupSound() => OnPickup?.Invoke();
+        private void RechargeBoostSound()  => OnRechargeBoost?.Invoke();
 
         private void Awake()
         {
@@ -84,14 +99,37 @@ namespace _RacingGamePrototype.Scripts.Car
         {
             _carControls.Enable();
 
-            _carControls.Player.Throttle.performed += ctx => _throttleInput = ctx.ReadValue<float>();
+            _carControls.Player.Throttle.performed += ctx =>
+            {
+                _throttleInput = ctx.ReadValue<float>();
+                UpdateLastDevice(ctx);
+            };
             _carControls.Player.Throttle.canceled  += ctx => _throttleInput = 0f;
 
-            _carControls.Player.Steer.performed += ctx => _steerInput = ctx.ReadValue<float>();
+            _carControls.Player.Steer.performed += ctx =>
+            {
+                _steerInput = ctx.ReadValue<float>();
+                UpdateLastDevice(ctx);
+            };
             _carControls.Player.Steer.canceled  += ctx => _steerInput = 0f;
             
-            _carControls.Player.Boost.performed += ctx => TryBoost();
+            _carControls.Player.Boost.performed += ctx =>
+            {
+                TryBoost();
+                UpdateLastDevice(ctx);
+            };
         }
+        
+        private void UpdateLastDevice(InputAction.CallbackContext ctx)
+        {
+            if (ctx.control.device is Gamepad)
+                _lastGamepadTime = ctx.time;
+            else if (ctx.control.device is Keyboard || ctx.control.device is Mouse)
+                _lastKeyboardTime = ctx.time;
+
+            _usingGamepad = _lastGamepadTime > _lastKeyboardTime;
+        }
+
 
         private void OnDisable()
         {
@@ -318,6 +356,7 @@ namespace _RacingGamePrototype.Scripts.Car
         
         public void RechargeBoost()
         {
+            RechargeBoostSound();
             if (_isBoosting)
             {
                 _boostRemaining = Mathf.Max(_boostRemaining, 0f);
@@ -344,6 +383,7 @@ namespace _RacingGamePrototype.Scripts.Car
             }
 
             SetVibration(0.8f, 1.0f);
+            StartBoostSound();
             _boostRemaining = duration;
 
             while (_boostRemaining > 0f)
@@ -358,6 +398,7 @@ namespace _RacingGamePrototype.Scripts.Car
             }
 
             SetVibration(0f, 0f);
+            EndBoostSound();
 
             if (ignoreCooldown)
             {
@@ -376,6 +417,7 @@ namespace _RacingGamePrototype.Scripts.Car
             _canBoost = true;
             _cooldownRemaining = 0f;
             _boostCooldownProgress = 1f;
+            RechargeBoostSound();
         }
 
 
@@ -385,6 +427,7 @@ namespace _RacingGamePrototype.Scripts.Car
         
         private void SetVibration(float low, float high)
         {
+            if (!_usingGamepad) return;
             if (Gamepad.current != null)
                 Gamepad.current.SetMotorSpeeds(low, high);
         }

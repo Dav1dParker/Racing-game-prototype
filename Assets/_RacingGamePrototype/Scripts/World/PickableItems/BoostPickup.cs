@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace _RacingGamePrototype.Scripts.World
+namespace _RacingGamePrototype.Scripts.World.PickableItems
 {
     public sealed class BoostPickup : PickableItem
     {

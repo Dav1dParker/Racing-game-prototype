@@ -70,7 +70,7 @@ PrefabInstance:
       objectReference: {fileID: 2100000, guid: 580d7e954bbff174794836248c2cc077, type: 2}
     - target: {fileID: 919132149155446097, guid: 85c36c7b89cce1e48bfb44ae5c1fdc84, type: 3}
       propertyPath: m_Name
-      value: BluePotion 1 1
+      value: BluePotion
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -81,7 +81,7 @@ PrefabInstance:
       addedObject: {fileID: 4259626568984118386}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 85c36c7b89cce1e48bfb44ae5c1fdc84, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 7693683110039981537}
+      addedObject: {fileID: 6745686326037062419}
   m_SourcePrefab: {fileID: 100100000, guid: 85c36c7b89cce1e48bfb44ae5c1fdc84, type: 3}
 --- !u!1 &5371622359815643388 stripped
 GameObject:
@@ -111,7 +111,7 @@ CapsuleCollider:
   m_Height: 2.663424
   m_Direction: 1
   m_Center: {x: 0, y: 0.49946702, z: 0}
---- !u!114 &7693683110039981537
+--- !u!114 &6745686326037062419
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -122,7 +122,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 010038a7dc4b9974395fbfeefd5ecc8f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::_RacingGamePrototype.Scripts.World.RechargePickup
+  m_EditorClassIdentifier: Assembly-CSharp::_RacingGamePrototype.Scripts.World.PickableItems.RechargePickup
   rotationSpeed: 50
   floatAmplitude: 0.5
   floatFrequency: 1

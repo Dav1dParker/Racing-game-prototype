@@ -4,7 +4,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 
-namespace _RacingGamePrototype.Scripts.World
+namespace _RacingGamePrototype.Scripts.World.PickableItems
 {
     [RequireComponent(typeof(Collider))]
     public abstract class PickableItem : MonoBehaviour

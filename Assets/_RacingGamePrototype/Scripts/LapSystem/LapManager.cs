@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace _RacingGamePrototype.Scripts.LapSystem
@@ -22,6 +23,8 @@ namespace _RacingGamePrototype.Scripts.LapSystem
         public float CurrentLapTime => _currentLapTime;
         public float BestLapTimeForward => _bestLapTimeForward;
         public float BestLapTimeReverse => _bestLapTimeReverse;
+        
+        public static event Action OnLapFinished;
         public bool IsReversed => _reversed;
 
         private void Awake()
@@ -132,10 +135,11 @@ namespace _RacingGamePrototype.Scripts.LapSystem
                     _bestLapTimeForward = lapTime;
             }
 
-            Debug.Log(
+            OnLapFinished?.Invoke();
+            /*Debug.Log(
                 $"Lap finished! Time: {lapTime:F2}s | " +
                 $"Best FWD: {_bestLapTimeForward:F2}s | Best REV: {_bestLapTimeReverse:F2}s"
-            );
+            );*/
         }
     }
 }

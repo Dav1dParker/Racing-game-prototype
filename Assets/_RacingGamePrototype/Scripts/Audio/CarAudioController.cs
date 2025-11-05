@@ -1,4 +1,5 @@
 using _RacingGamePrototype.Scripts.Car;
+using _RacingGamePrototype.Scripts.LapSystem;
 using UnityEngine;
 
 namespace _RacingGamePrototype.Scripts.Audio
@@ -25,6 +26,7 @@ namespace _RacingGamePrototype.Scripts.Audio
             CarController.OnBoostEnd += HandleBoostEnd;
             CarController.OnPickup += HandlePickup;
             CarController.OnRechargeBoost += HandleRecharge;
+            LapManager.OnLapFinished += HandleLapFinished;
         }
 
         private void OnDisable()
@@ -33,6 +35,7 @@ namespace _RacingGamePrototype.Scripts.Audio
             CarController.OnBoostEnd -= HandleBoostEnd;
             CarController.OnPickup -= HandlePickup;
             CarController.OnRechargeBoost -= HandleRecharge;
+            LapManager.OnLapFinished -= HandleLapFinished;
         }
 
         private void HandleBoostStart()
@@ -46,6 +49,11 @@ namespace _RacingGamePrototype.Scripts.Audio
             StopLoop();
             //PlayOneShot(boostEnd);
         }
+        
+        private void HandleLapFinished()
+        {
+            PlayOneShot(recharge, 0.7f, 0.5f);
+        }
 
         private void HandlePickup()
         {
@@ -54,14 +62,19 @@ namespace _RacingGamePrototype.Scripts.Audio
         
         private void HandleRecharge()
         {
-            PlayOneShot(recharge);
+            PlayOneShot(recharge, 0.5f, 1f);
+        }
+        
+        private void PlayOneShot(AudioClip clip, float volume = 1f, float pitch = 1f)
+        {
+            if (!clip || !_source) return;
+            _source.clip = clip;
+            _source.pitch = pitch;
+            _source.volume = volume;
+            _source.loop = false;
+            _source.Play();
         }
 
-        private void PlayOneShot(AudioClip clip)
-        {
-            if (!clip) return;
-            _source.PlayOneShot(clip);
-        }
 
         private void PlayLoop(AudioClip clip)
         {

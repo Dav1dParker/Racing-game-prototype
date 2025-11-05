@@ -1,7 +1,7 @@
 using _RacingGamePrototype.Scripts.Car;
 using UnityEngine;
 
-namespace _RacingGamePrototype.Scripts.World
+namespace _RacingGamePrototype.Scripts.World.PickableItems
 {
     public class RechargePickup : PickableItem
     {
