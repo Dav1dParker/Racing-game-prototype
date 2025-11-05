@@ -19,6 +19,7 @@ namespace _RacingGamePrototype.Scripts.LapSystem
         private bool _hasStarted;
         private bool _allCheckpointsPassed;
         private bool _reversed;
+        private LapTimeData _lapData;
 
         public float CurrentLapTime => _currentLapTime;
         public float BestLapTimeForward => _bestLapTimeForward;
@@ -30,6 +31,9 @@ namespace _RacingGamePrototype.Scripts.LapSystem
         private void Awake()
         {
             Instance = this;
+            _lapData = LapTimeStorage.Load();
+            _bestLapTimeForward = _lapData.bestForward;
+            _bestLapTimeReverse = _lapData.bestReverse;
         }
 
         private void Update()
@@ -123,19 +127,33 @@ namespace _RacingGamePrototype.Scripts.LapSystem
         {
             _lapActive = false;
             float lapTime = Time.time - _lapStartTime;
+            bool recordBroken = false;
 
             if (_reversed)
             {
-                if (lapTime < _bestLapTimeReverse)
-                    _bestLapTimeReverse = lapTime;
+                if (lapTime < _lapData.bestReverse)
+                {
+                    _lapData.bestReverse = lapTime;
+                    recordBroken = true;
+                }
             }
             else
             {
-                if (lapTime < _bestLapTimeForward)
-                    _bestLapTimeForward = lapTime;
+                if (lapTime < _lapData.bestForward)
+                {
+                    _lapData.bestForward = lapTime;
+                    recordBroken = true;
+                }
+            }
+
+            if (recordBroken)
+            {
+                LapTimeStorage.Save(_lapData);
+                Debug.Log($"New best lap saved! Forward: {_lapData.bestForward:F2} Reverse: {_lapData.bestReverse:F2}");
             }
 
             OnLapFinished?.Invoke();
+
             /*Debug.Log(
                 $"Lap finished! Time: {lapTime:F2}s | " +
                 $"Best FWD: {_bestLapTimeForward:F2}s | Best REV: {_bestLapTimeReverse:F2}s"
