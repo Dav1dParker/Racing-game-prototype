@@ -12,13 +12,30 @@ namespace _RacingGamePrototype.Scripts.Audio
         //[SerializeField] private AudioClip boostEnd;
         [SerializeField] private AudioClip pickup;
         [SerializeField] private AudioClip recharge;
+        [SerializeField] private AudioClip backgroundMusic;
+        [SerializeField] private float musicVolume = 0.4f;
+        private AudioSource _musicSource;
 
         private AudioSource _source;
 
         private void Awake()
         {
             _source = GetComponent<AudioSource>();
+
+            _musicSource = gameObject.AddComponent<AudioSource>();
+            _musicSource.clip = backgroundMusic;
+            _musicSource.loop = true;
+            _musicSource.volume = musicVolume;
+            _musicSource.playOnAwake = false;
         }
+
+        private void Start()
+        {
+            if (backgroundMusic && !_musicSource.isPlaying)
+                _musicSource.Play();
+        }
+
+
 
         private void OnEnable()
         {
