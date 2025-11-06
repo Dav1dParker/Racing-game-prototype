@@ -58,7 +58,11 @@ namespace _RacingGamePrototype.Scripts.Audio
             LapManager.OnLapFinished -= HandleLapFinished;
         }
 
-        private void HandleBoostStart() => PlayBoost(boostStart, boostStartVolume);
+        private void HandleBoostStart()
+        {
+            if (!_boostSource.isPlaying)
+                PlayBoost(boostStart, boostStartVolume);
+        }
         private void HandleBoostEnd() => _boostSource.Stop();
         private void HandleLapFinished() => PlaySfx(recharge, 0.7f, 0.5f);
         private void HandlePickup() => PlaySfx(pickup, pickupVolume);
@@ -75,8 +79,11 @@ namespace _RacingGamePrototype.Scripts.Audio
         private void PlayBoost(AudioClip clip, float volume = 1f)
         {
             if (!clip || !_boostSource) return;
-            _boostSource.volume = volume;
+            if (_boostSource.isPlaying && _boostSource.clip == clip)
+                return;
+
             _boostSource.clip = clip;
+            _boostSource.volume = volume;
             _boostSource.loop = false;
             _boostSource.Play();
         }
