@@ -351,6 +351,7 @@ namespace _RacingGamePrototype.Scripts.Car
             //PickupSound();
             float timer = duration;
 
+            OnBoostStart?.Invoke();
             while (timer > 0f)
             {
                 //Debug.Log(timer);
@@ -358,6 +359,7 @@ namespace _RacingGamePrototype.Scripts.Car
                 timer -= Time.fixedDeltaTime;
                 yield return new WaitForFixedUpdate();
             }
+            OnBoostEnd?.Invoke();
 
             _pickupBoostCoroutine = null;
         }
