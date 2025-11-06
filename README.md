@@ -23,6 +23,7 @@ A arcade-style racing game prototype built in Unity 6, featuring realistic car p
 - Boost can be recharged via pickups
 - Controller vibration feedback during boost
 - UI boost bar for cooldown progress
+- Visual flame effect made with particle system
 
 ### Lap System
 - Checkpoint-based lap tracking with forward/reverse direction support
