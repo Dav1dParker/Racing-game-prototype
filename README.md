@@ -2,7 +2,7 @@
 
 A arcade-style racing game prototype built in Unity 6, featuring realistic car physics, drifting, boost mechanics, surface-based grip, checkpoints, and lap timing.
 
-[Video preview](https://youtu.be/_Ur1qbtELIs)
+[Video preview](https://youtu.be/ZP93yhlo0S8)
 
 [Russian readme](READMEru.md)
 
@@ -81,7 +81,7 @@ Assets/
 
 - Best lap times are stored in a JSON file:
 
-  ```/RacingGamePrototype/Assets/BestLapTimes.json```
+  ```"RacingGamePrototype_Data\BestLapTimes.json"```
 - Automatically created on first launch
 - Persists between sessions and updates whenever a new record is set
 
