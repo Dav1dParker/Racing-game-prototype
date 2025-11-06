@@ -11505,7 +11505,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3074505490258548953, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: boostForce
-      value: 10
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4869026336567447102, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: m_LocalPosition.x
@@ -13306,11 +13306,11 @@ MonoBehaviour:
   boostStart: {fileID: 8300000, guid: 6eb31cc04f44cb246926be5d75ecb182, type: 3}
   boostStartVolume: 0.6
   pickup: {fileID: 8300000, guid: f0e81963aedb5ef4c97b60edb32dfdc1, type: 3}
-  pickupVolume: 0.5
+  pickupVolume: 0.2
   recharge: {fileID: 8300000, guid: f0e81963aedb5ef4c97b60edb32dfdc1, type: 3}
-  rechargeVolume: 0.3
+  rechargeVolume: 0.1
   backgroundMusic: {fileID: 8300000, guid: 59e11a8d9e9ee284eb28a0b29c5ec45f, type: 3}
-  musicVolume: 0.07
+  musicVolume: 0.09
 --- !u!82 &330827512
 AudioSource:
   m_ObjectHideFlags: 0
@@ -41658,7 +41658,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3074505490258548953, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: boostForce
-      value: 10
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4869026336567447102, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: m_LocalPosition.x
@@ -42214,7 +42214,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3074505490258548953, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: boostForce
-      value: 5
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 4869026336567447102, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: m_LocalPosition.x
@@ -71397,7 +71397,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3074505490258548953, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: boostForce
-      value: 5
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4869026336567447102, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: m_LocalPosition.x
@@ -90140,7 +90140,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3074505490258548953, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: boostForce
-      value: 5
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 4869026336567447102, guid: 13cee10dce7d9d94c9f278a5f0a23676, type: 3}
       propertyPath: m_LocalPosition.x

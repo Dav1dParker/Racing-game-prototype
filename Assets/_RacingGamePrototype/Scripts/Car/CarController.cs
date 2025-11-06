@@ -68,6 +68,8 @@ namespace _RacingGamePrototype.Scripts.Car
         private bool _usingGamepad;
         private double _lastGamepadTime;
         private double _lastKeyboardTime;
+        private Coroutine _pickupBoostCoroutine;
+
 
 
         private float _boostCooldownProgress = 1f;
@@ -338,21 +340,28 @@ namespace _RacingGamePrototype.Scripts.Car
 
         public void ApplyInstantBoost(float force, float duration)
         {
-            StartBoost(force, duration, true);
+            if (_pickupBoostCoroutine != null)
+                StopCoroutine(_pickupBoostCoroutine);
+
+            _pickupBoostCoroutine = StartCoroutine(PickupBoostRoutine(force, duration));
         }
 
-        private void StartBoost(float force, float duration, bool ignoreCooldown)
+        private IEnumerator PickupBoostRoutine(float force, float duration)
         {
-            if (!ignoreCooldown)
-            {
-                if (!_canBoost) return;
+            //PickupSound();
+            float timer = duration;
 
-                if (_boostCoroutine != null)
-                    StopCoroutine(_boostCoroutine);
+            while (timer > 0f)
+            {
+                //Debug.Log(timer);
+                _rb.AddForce(transform.forward * force, ForceMode.Acceleration);
+                timer -= Time.fixedDeltaTime;
+                yield return new WaitForFixedUpdate();
             }
 
-            _boostCoroutine = StartCoroutine(BoostRoutine(force, duration, ignoreCooldown));
+            _pickupBoostCoroutine = null;
         }
+
         
         public void RechargeBoost()
         {
@@ -369,9 +378,29 @@ namespace _RacingGamePrototype.Scripts.Car
                 _canBoost = true;
             }
         }
-
-
         
+        
+        private void StartBoost(float force, float duration, bool ignoreCooldown)
+        {
+            if (ignoreCooldown)
+            {
+                if (_isBoosting)
+                {
+                    _boostRemaining += duration;
+                    return;
+                }
+            }
+            else
+            {
+                if (!_canBoost) return;
+
+                if (_boostCoroutine != null)
+                    StopCoroutine(_boostCoroutine);
+            }
+
+            _boostCoroutine = StartCoroutine(BoostRoutine(force, duration, ignoreCooldown));
+        }
+
         private IEnumerator BoostRoutine(float force, float duration, bool ignoreCooldown)
         {
             if (!ignoreCooldown)
@@ -384,7 +413,9 @@ namespace _RacingGamePrototype.Scripts.Car
 
             SetVibration(0.8f, 1.0f);
             StartBoostSound();
-            _boostRemaining = duration;
+            
+            _boostRemaining = Mathf.Max(_boostRemaining, 0f);
+            _boostRemaining += duration;
 
             while (_boostRemaining > 0f)
             {
@@ -402,6 +433,7 @@ namespace _RacingGamePrototype.Scripts.Car
 
             if (ignoreCooldown)
             {
+                _isBoosting = false;
                 yield break;
             }
 
@@ -419,10 +451,6 @@ namespace _RacingGamePrototype.Scripts.Car
             _boostCooldownProgress = 1f;
             RechargeBoostSound();
         }
-
-
-
-
 
         
         private void SetVibration(float low, float high)
