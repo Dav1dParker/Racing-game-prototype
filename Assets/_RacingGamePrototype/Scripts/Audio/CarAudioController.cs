@@ -8,19 +8,24 @@ namespace _RacingGamePrototype.Scripts.Audio
     public sealed class CarAudioController : MonoBehaviour
     {
         [SerializeField] private AudioClip boostStart;
-        //[SerializeField] private AudioClip boostLoop;
-        //[SerializeField] private AudioClip boostEnd;
+        [SerializeField] private float boostStartVolume = 0.7f;
         [SerializeField] private AudioClip pickup;
+        [SerializeField] private float pickupVolume = 0.7f;
         [SerializeField] private AudioClip recharge;
+        [SerializeField] private float rechargeVolume = 0.7f;
         [SerializeField] private AudioClip backgroundMusic;
         [SerializeField] private float musicVolume = 0.4f;
-        private AudioSource _musicSource;
 
-        private AudioSource _source;
+        private AudioSource _sfxSource;
+        private AudioSource _boostSource;
+        private AudioSource _musicSource;
 
         private void Awake()
         {
-            _source = GetComponent<AudioSource>();
+            _sfxSource = GetComponent<AudioSource>();
+
+            _boostSource = gameObject.AddComponent<AudioSource>();
+            _boostSource.loop = false;
 
             _musicSource = gameObject.AddComponent<AudioSource>();
             _musicSource.clip = backgroundMusic;
@@ -34,8 +39,6 @@ namespace _RacingGamePrototype.Scripts.Audio
             if (backgroundMusic && !_musicSource.isPlaying)
                 _musicSource.Play();
         }
-
-
 
         private void OnEnable()
         {
@@ -55,56 +58,27 @@ namespace _RacingGamePrototype.Scripts.Audio
             LapManager.OnLapFinished -= HandleLapFinished;
         }
 
-        private void HandleBoostStart()
+        private void HandleBoostStart() => PlayBoost(boostStart, boostStartVolume);
+        private void HandleBoostEnd() => _boostSource.Stop();
+        private void HandleLapFinished() => PlaySfx(recharge, 0.7f, 0.5f);
+        private void HandlePickup() => PlaySfx(pickup, pickupVolume);
+        private void HandleRecharge() => PlaySfx(recharge, rechargeVolume);
+
+        private void PlaySfx(AudioClip clip, float volume = 1f, float pitch = 1f)
         {
-            PlayOneShot(boostStart);
-            //PlayLoop(boostLoop);
+            if (!clip || !_sfxSource) return;
+            _sfxSource.pitch = pitch;
+            _sfxSource.volume = volume;
+            _sfxSource.PlayOneShot(clip);
         }
 
-        private void HandleBoostEnd()
+        private void PlayBoost(AudioClip clip, float volume = 1f)
         {
-            StopLoop();
-            //PlayOneShot(boostEnd);
-        }
-        
-        private void HandleLapFinished()
-        {
-            PlayOneShot(recharge, 0.7f, 0.5f);
-        }
-
-        private void HandlePickup()
-        {
-            //PlayOneShot(pickup); // Disabled because currently all pickups use their own sounds already
-        }
-        
-        private void HandleRecharge()
-        {
-            PlayOneShot(recharge, 0.5f, 1f);
-        }
-        
-        private void PlayOneShot(AudioClip clip, float volume = 1f, float pitch = 1f)
-        {
-            if (!clip || !_source) return;
-            _source.clip = clip;
-            _source.pitch = pitch;
-            _source.volume = volume;
-            _source.loop = false;
-            _source.Play();
-        }
-
-
-        private void PlayLoop(AudioClip clip)
-        {
-            if (!clip) return;
-            _source.clip = clip;
-            _source.loop = true;
-            _source.Play();
-        }
-
-        private void StopLoop()
-        {
-            _source.loop = false;
-            _source.Stop();
+            if (!clip || !_boostSource) return;
+            _boostSource.volume = volume;
+            _boostSource.clip = clip;
+            _boostSource.loop = false;
+            _boostSource.Play();
         }
     }
 }

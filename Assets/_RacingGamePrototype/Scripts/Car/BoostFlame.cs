@@ -1,22 +1,41 @@
+using _RacingGamePrototype.Scripts.Car;
 using UnityEngine;
 
-namespace _RacingGamePrototype.Scripts.Car
+namespace _RacingGamePrototype.Scripts.car
 {
+    [RequireComponent(typeof(ParticleSystem))]
     public sealed class BoostFlame : MonoBehaviour
     {
-        [SerializeField] private ParticleSystem[] flame;
-        [SerializeField] private CarController car;
+        private ParticleSystem _flame;
 
-        private void Update()
+        private void Awake()
         {
-            if (!car || !flame[0]) return;
+            _flame = GetComponent<ParticleSystem>();
+            _flame.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
 
-            foreach (var f in flame)
-            {
-                var emission = f.emission;
-                emission.enabled = car.IsBoosting();
-            }
-            
+        private void OnEnable()
+        {
+            CarController.OnBoostStart += HandleBoostStart;
+            CarController.OnBoostEnd += HandleBoostEnd;
+        }
+
+        private void OnDisable()
+        {
+            CarController.OnBoostStart -= HandleBoostStart;
+            CarController.OnBoostEnd -= HandleBoostEnd;
+        }
+
+        private void HandleBoostStart()
+        {
+            if (!_flame.isPlaying)
+                _flame.Play();
+        }
+
+        private void HandleBoostEnd()
+        {
+            if (_flame.isPlaying)
+                _flame.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
     }
 }
