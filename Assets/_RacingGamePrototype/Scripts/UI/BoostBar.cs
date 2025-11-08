@@ -8,11 +8,11 @@ namespace _RacingGamePrototype.Scripts.UI
     {
         [SerializeField] private Image fillImage;
         [SerializeField] private Image backImage;
-        [SerializeField] private CarController carController;
+        [SerializeField] private CarBoostSystem carBoostSystem;
 
         private void Update()
         {
-            fillImage.fillAmount = carController.GetBoostCooldownProgress();
+            fillImage.fillAmount = carBoostSystem.BoostProgress;
             if (fillImage.fillAmount >= 1f)
             {
                 backImage.color = Color.white;

@@ -9,10 +9,10 @@ namespace _RacingGamePrototype.Scripts.World.PickableItems
 
         protected override void OnPickedUp(Collider collector)
         {
-            var car = collector.GetComponent<_RacingGamePrototype.Scripts.Car.CarController>();
+            var car = collector.GetComponent<_RacingGamePrototype.Scripts.Car.CarBoostSystem>();
             if (car)
             {
-                car.ApplyInstantBoost(boostForce, boostDuration);
+                car.ApplyPickupBoost(boostForce, boostDuration);
             }
         }
     }

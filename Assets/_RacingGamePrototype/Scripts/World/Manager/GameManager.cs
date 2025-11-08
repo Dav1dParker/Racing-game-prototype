@@ -66,22 +66,14 @@ namespace _RacingGamePrototype.Scripts.World.Manager
         private void RespawnCar()
         {
             if (!car || !spawnPoint) return;
-
-            car.Reset();
-            var rb = car.Rigidbody;
+            
+            //var rb = car.Rigidbody;
             var targetPos = spawnPoint.position;
             var targetRot = _isReversed
                 ? spawnPoint.rotation * Quaternion.Euler(0f, 180f, 0f)
                 : spawnPoint.rotation;
             
-            rb.linearVelocity = Vector3.zero;
-            rb.angularVelocity = Vector3.zero;
-            
-            rb.isKinematic = true;
-            rb.position = targetPos;
-            rb.rotation = targetRot;
-            car.transform.SetPositionAndRotation(targetPos, targetRot);
-            rb.isKinematic = false;
+            car.ResetCar(targetPos, targetRot);
 
             LapManager.Instance?.ResetLapState();
         }

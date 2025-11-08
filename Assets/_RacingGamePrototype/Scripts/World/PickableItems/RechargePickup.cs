@@ -7,7 +7,7 @@ namespace _RacingGamePrototype.Scripts.World.PickableItems
     {
         protected override void OnPickedUp(Collider collector)
         {
-            var car = collector.GetComponent<CarController>();
+            var car = collector.GetComponent<CarBoostSystem>();
             if (car)
             {
                 car.RechargeBoost();

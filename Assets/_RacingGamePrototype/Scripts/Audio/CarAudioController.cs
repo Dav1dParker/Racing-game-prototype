@@ -42,19 +42,19 @@ namespace _RacingGamePrototype.Scripts.Audio
 
         private void OnEnable()
         {
-            CarController.OnBoostStart += HandleBoostStart;
-            CarController.OnBoostEnd += HandleBoostEnd;
-            CarController.OnPickup += HandlePickup;
-            CarController.OnRechargeBoost += HandleRecharge;
+            CarBoostSystem.OnBoostStart += HandleBoostStart;
+            CarBoostSystem.OnBoostEnd += HandleBoostEnd;
+            //CarController.OnPickup += HandlePickup;
+            CarBoostSystem.OnRecharge += HandleRecharge;
             LapManager.OnLapFinished += HandleLapFinished;
         }
 
         private void OnDisable()
         {
-            CarController.OnBoostStart -= HandleBoostStart;
-            CarController.OnBoostEnd -= HandleBoostEnd;
-            CarController.OnPickup -= HandlePickup;
-            CarController.OnRechargeBoost -= HandleRecharge;
+            CarBoostSystem.OnBoostStart -= HandleBoostStart;
+            CarBoostSystem.OnBoostEnd -= HandleBoostEnd;
+            //CarController.OnPickup -= HandlePickup;
+            CarBoostSystem.OnRecharge -= HandleRecharge;
             LapManager.OnLapFinished -= HandleLapFinished;
         }
 

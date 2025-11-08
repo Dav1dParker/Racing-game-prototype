@@ -5,7 +5,7 @@ namespace _RacingGamePrototype.Scripts.Car
     public sealed class BrakeLightManager : MonoBehaviour
     {
         [SerializeField] private BrakeLightController[] lights;
-        [SerializeField] private CarController car;
+        [SerializeField] private CarPhysicsController car;
 
         private void Update()
         {

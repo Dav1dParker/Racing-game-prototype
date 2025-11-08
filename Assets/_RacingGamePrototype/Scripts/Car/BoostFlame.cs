@@ -16,14 +16,14 @@ namespace _RacingGamePrototype.Scripts.car
 
         private void OnEnable()
         {
-            CarController.OnBoostStart += HandleBoostStart;
-            CarController.OnBoostEnd += HandleBoostEnd;
+            CarBoostSystem.OnBoostStart += HandleBoostStart;
+            CarBoostSystem.OnBoostEnd += HandleBoostEnd;
         }
 
         private void OnDisable()
         {
-            CarController.OnBoostStart -= HandleBoostStart;
-            CarController.OnBoostEnd -= HandleBoostEnd;
+            CarBoostSystem.OnBoostStart -= HandleBoostStart;
+            CarBoostSystem.OnBoostEnd -= HandleBoostEnd;
         }
 
         private void HandleBoostStart()
