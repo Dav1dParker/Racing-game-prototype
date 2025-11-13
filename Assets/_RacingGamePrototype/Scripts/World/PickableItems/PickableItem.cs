@@ -26,7 +26,7 @@ namespace _RacingGamePrototype.Scripts.World.PickableItems
         protected virtual void Awake()
         {
             _startPosition = transform.position;
-            _offset = Random.Range(0f, Mathf.PI * 2f); // randomize float
+            _offset = Random.Range(0f, Mathf.PI * 2f);
             var col = GetComponent<Collider>();
             col.isTrigger = true;
             _renderer = GetComponent<Renderer>();

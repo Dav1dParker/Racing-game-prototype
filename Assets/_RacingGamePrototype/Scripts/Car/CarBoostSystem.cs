@@ -53,10 +53,7 @@ namespace _RacingGamePrototype.Scripts.Car
                 StopCoroutine(_pickupCoroutine);
             _pickupCoroutine = StartCoroutine(PickupBoostRoutine(force, duration));
         }
-
-        /// <summary>
-        /// Called by recharge pickups. Instantly restores cooldown and allows next boost.
-        /// </summary>
+        
         public void RechargeBoost()
         {
             _canBoost = true;

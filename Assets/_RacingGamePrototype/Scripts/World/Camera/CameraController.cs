@@ -2,7 +2,7 @@ using _RacingGamePrototype.Scripts.Car;
 using Unity.Cinemachine;
 using UnityEngine;
 
-namespace _RacingGamePrototype.Scripts.World
+namespace _RacingGamePrototype.Scripts.World.Camera
 {
     public class CameraController : MonoBehaviour
     {
